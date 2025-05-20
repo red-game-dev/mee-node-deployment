@@ -1,0 +1,14 @@
+{
+    "name": "Biconomy-light-sdk",
+    "version": "1.0.0",
+    "description": "Biconomy MEE task demonstration",
+    "main": "index.js",
+    "scripts": {
+      "docker:start": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+      "fork:mainnet": "bash ./scripts/fork-anvil.sh",
+      "verify:fork": "bash ./scripts/verify-fork.sh",
+      "verify:contract:available": " cast code 0x000000001D1D5004a02bAfAb9de2D6CE5b7B13de --rpc-url http://localhost:8545",
+      "make:transaction": "cd ./src && npm install && npm run start"
+    }
+  }
+  
