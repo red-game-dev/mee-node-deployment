@@ -1,0 +1,24 @@
+{
+  "name": "biconomy-task",
+  "version": "1.0.0",
+  "description": "Biconomy MEE task demonstration",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@biconomy/abstractjs": "1.0.12",
+    "@biconomy/account": "^4.5.7",
+    "@rhinestone/module-sdk": "^0.2.7",
+    "axios": "^1.9.0",
+    "dotenv": "^16.4.7",
+    "ethers": "6.14.0",
+    "node-fetch": "^3.3.2",
+    "viem": "^2.29.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.2",
+    "ts-node": "^10.9.1",
+    "typescript": "5.8.3"
+  }
+}
