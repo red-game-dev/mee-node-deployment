@@ -1,211 +1,168 @@
-# Mee Node Deployment Guide
+## 📘 Biconomy Light SDK – Local Test Setup & Execution Guide
 
-This repository contains the necessary configuration files to deploy and run a Mee Node. This guide will walk you through the setup process and provide information about node maintenance.
+This guide walks through setting up a local mainnet fork, verifying contract availability, and running a transaction via the Biconomy SDK.
 
-## Prerequisites
+---
 
-- Docker and Docker Compose installed
-- Access to RPC endpoints for the chains you want to support
-- Sufficient funds in native tokens for the supported chains
+## 🧱 Prerequisites
 
-## Setting Up a Node
+Make sure the following tools are installed:
 
-### 1. Clone the Repository
+* [Node.js](https://nodejs.org/) (v16 or higher)
+* [Foundry (cast, anvil)](https://book.getfoundry.sh/)
+* [Docker & Docker Compose](https://docs.docker.com/compose/)
+* [jq](https://stedolan.github.io/jq/) (optional, for JSON parsing)
+
+---
+
+## 📁 Project Structure Assumptions
+
+```
+.
+├── docker-compose.yml
+├── scripts/
+│   ├── fork-anvil.sh
+│   ├── verify-fork.sh
+├── src/
+│   └── index.ts - SDK integration and transaction code, based if sdk will intalize or not, else will use traditonal ethers.
+├── package.json
+```
+
+---
+
+## 🧪 Step-by-Step Instructions
+
+---
+
+### 1. ✅ Fork Mainnet Locally via Anvil
+
+This script forks Ethereum mainnet using your Alchemy/Infura RPC and runs Anvil locally on port `8545`.
 
 ```bash
-git clone https://github.com/bcnmy/mee-node-deployment
-cd mee-node-deployment
+npm run fork:mainnet
 ```
 
-### 2. Configure Chain RPC URLs
+☑️ **What it does**:
 
-1. Navigate to the appropriate chains folder:
-   - `chains-prod/` for mainnet networks
-   - `chains-testnet/` for testnet networks
+* Loads `.env` to read `MAINNET_RPC_URL`
+* Starts anvil with:
 
-2. For each chain you want to support, create a JSON file with the RPC configuration.
+  * chain ID = 1
+  * block number = `22243923` (important to ensure factory contract exists)
+  * impersonation and large balances enabled
 
-> **Note**: For mainnet node operators, it's recommended to support all 9 mainnet networks from the `chains-prod` folder.
+📌 **Output should include:**
 
-### 3. Configure Docker Compose
+```
+Anvil is running! The local RPC URL is: http://localhost:8545
+```
 
-1. Open `docker-compose.yml` and ensure the volumes section points to your chosen chains folder:
-   ```yaml
-   volumes:
-     - ./chains-testnet:/app/chains  # Change to chains-prod for mainnet
-   ```
+---
 
-2. You can support both mainnet and testnet by adding JSON files to the loaded chains folder.
+### 2. ✅ Verify the Forked Node Matches Expectations
 
-### 4. Set Up Environment Variables
-
-You can provide environment variables in two ways:
-
-1. Create a `.env` file with the following minimum configuration:
-   ```env
-   KEY=<your-private-key>
-   PORT=3000
-   REDIS_HOST=redis
-   REDIS_PORT=6379
-   ```
-   
-   To use the `.env` file, run Docker Compose with the `--env-file` flag:
-   ```bash
-   docker compose --env-file .env up -d
-   ```
-   Or you can add the `env_file` directive to your `docker-compose.yml`:
-   ```yaml
-   services:
-     node:
-       env_file:
-         - .env
-   ```
-
-2. Or provide them directly in the `docker-compose.yml` file as shown in the example:
-   ```yaml
-   environment:
-     - KEY=<your-private-key>
-     - PORT=3000
-     - REDIS_HOST=redis
-     - REDIS_PORT=6379
-   ```
-
-> **Note**: If you're using your own Redis instance, update `REDIS_HOST` and `REDIS_PORT` accordingly.
-
-### 5. Fund Your Node
-
-Ensure your node's private key address is funded with sufficient native tokens on all supported chains. Recommended minimum funding:
-
-| Chain | Minimum Native Token |
-|-------|---------------------|
-| ETH-based chains | 0.05 ETH |
-| Gnosis Chain | 100 xDAI |
-| BSC | 0.17 BNB |
-| Sonic Chain | 50 S |
-| Polygon | 500 POL |
-| Avax C-Chain | 5 AVAX |
-
-### 6. Start the Node
+Run the verification script to ensure fork is pointing to correct block and chain ID:
 
 ```bash
-docker compose up -d
+npm run verify:fork
 ```
 
-Upon successful startup, you should see logs indicating:
-- Node initialization
-- Chain health checks
-- Simulator status
+☑️ This may include checks like:
 
-## Additional Configuration Options
+* Block number ≥ `22243923`
+* Chain ID = `1`
+* Returns contract code for system contracts
 
-The following environment variables can be added to your `.env` file for additional configuration:
+---
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FEE_BENEFICIARY` | Address that collects node fees | Node's private key address |
-| `FEE_PERCENTAGE` | Percentage added to gas fees | 10 |
-| `GATEWAY_URL` | Biconomy Network URL | Required for mainnet |
-| `ENV_ENC_PASSWORD` | Password for encrypted key file | - |
-| `USEROP_MIN_EXEC_WINDOW_DURATION` | Minimum execution window (seconds) | 180 |
-| `USEROP_MAX_EXEC_WINDOW_DURATION` | Maximum execution window (seconds) | 600 |
-| `USEROP_MAX_WAIT_BEFORE_EXEC_START` | Maximum future execution time (seconds) | 300 |
-| `USEROP_TRACE_CALL_SIMULATION_POLL_INTERVAL` | Simulation check interval (seconds) | 2 |
-| `USEROP_SAFE_WINDOW_BEFORE_EXEC_END` | Early execution threshold (seconds) | 30 |
-| `MAX_CALLDATA_GAS_LIMIT` | Maximum calldata gas limit | 330000001 |
-| `HEALTH_CHECK_INTERVAL` | How often the node performs chain health checks (seconds) | 300 |
-| `GLUEX_PARTNER_UNIQUE_ID` | Partner ID for GlueX integration | - |
-| `GLUEX_API_KEY` | API key for GlueX integration | - |
+### 3. ✅ Ensure Biconomy Smart Account Factory Contract Is Deployed
 
-## Loading Encrypted Private Key
+This confirms the smart account factory is available at its expected address (`0x000000001D1D5004a02bAfAb9de2D6CE5b7B13de`):
 
-Instead of providing the raw private key, you can use an encrypted key file:
-
-1. Install the ChainLink env-enc package:
-   ```bash
-   npm install -g @chainlink/env-enc
-   ```
-
-2. Generate encrypted key:
-   ```bash
-   npx env-enc set-pw
-   npx env-enc set
-   ```
-   When prompted, enter "KEY" as the variable name and your private key as the value.
-
-3. Rename the generated file to `key.enc` and place it in the `./keystore` folder.
-
-4. In your `.env` file, replace the `KEY` variable with:
-   ```env
-   ENV_ENC_PASSWORD=<your-encryption-password>
-   ```
-
-## Any Gas Token Support
-
-If you want to support additional gas tokens beyond what's explicitly allowed by the chain configuration, you can activate GlueX integration. This feature enables users to pay for transaction execution using any supported token, while your node receives the native coin.
-
-GlueX integration works by automatically swapping the user's chosen token into the native coin required for execution. This means:
-- Users can spend any supported token
-- Your node receives the native coin for gas fees
-- The swap happens automatically as part of the transaction
-
-To activate GlueX support, add the following environment variables to your configuration:
-```env
-GLUEX_PARTNER_UNIQUE_ID=<your-partner-id>
-GLUEX_API_KEY=<your-api-key>
+```bash
+npm run verify:contract:available
 ```
 
-## Node Maintenance
+☑️ **Expected output:**
 
-### Monitoring Node Health
+* Contract bytecode (starts with `0x6080...`)
+* **Not** `0x` (which means no contract deployed)
 
-1. Check the node status endpoint:
-   ```
-   http://localhost:3000/v3/info
-   ```
+---
 
-2. Monitor chain health status in the response. A healthy chain status looks like:
-   ```json
-   {
-     "chainId": "11155420",
-     "name": "OP Sepolia",
-     "healthCheck": {
-       "rpcOperational": true,
-       "debugTraceCallSupported": true,
-       "nativeBalance": "528841195784636675",
-       "nonce": 5055,
-       "execQueueActiveJobs": 0,
-       "execQueuePendingJobs": 0,
-       "lastChecked": 1743538429111,
-       "status": "healthy"
-     }
-   }
-   ```
+### 4. ✅ Start Local MEE Node (Bundler)
 
-### Balance Management
+This runs the Biconomy MEE Bundler locally using Docker:
 
-1. Regularly monitor native token balances across all supported chains
-2. Swap earned ERC20 tokens for native tokens when needed
-3. Maintain sufficient funding for gas fees
+```bash
+npm run docker:start
+```
 
-### Troubleshooting
+☑️ What it does:
 
-If a chain shows unhealthy status:
+* Builds the bundler container with `docker-compose`
+* Exposes JSON-RPC API on `http://localhost:3000`
+
+📌 Ensure that your forked Anvil and Docker container are both running before proceeding.
+
+---
+
+### 5. ✅ Make a Biconomy Smart Account Transaction
+
+Run your task runner script inside `./src` to:
+
+* Initialize a Smart Account
+* Transfer USDC from whale to admin EOA
+* Send USDC from Smart Account to AAVE
+* Receive aUSDC in Smart Account
+* Send aUSDC back to EOA
+
+```bash
+npm run make:transaction
+```
+
+☑️ This will:
+
+* Check balance and fund the EOA
+* Deploy smart account (if needed)
+* Perform approvals and interaction with AAVE
+* Validate everything via logs
+
+📌 **Watch the logs for:**
+
+```bash
+✅ Smart Account aUSDC balance after: ...
+✅ Successfully transferred aUSDC back to EOA
+=== MEE INTEGRATION COMPLETED SUCCESSFULLY ===
+```
+
+---
+
+## 🔄 Troubleshooting
+
+| Issue                               | Solution                                                     |
+| ----------------------------------- | ------------------------------------------------------------ |
+| `Cannot POST /v3`                   | Use `MEE_NODE_URL=http://localhost:3000` (no `/v3`)          |
+| `computeAccountAddress returned 0x` | Ensure block number is ≥ `22243923` and chain ID is `1`      |
+| Docker fails                        | Try `docker-compose down` first and ensure port 3000 is free |
+| EOA has no ETH                      | Add ETH via `anvil` config or impersonate an ETH whale       |
+
+---
+
+## 📦 package.json (for reference)
+
 ```json
 {
-  "chainId": "421614",
-  "name": "Arbitrum Sepolia",
-  "healthCheck": {
-    "status": "not-healthy",
-    "reason": "native coin balance too low"
+  "name": "Biconomy-light-sdk",
+  "version": "1.0.0",
+  "description": "Biconomy MEE task demonstration",
+  "main": "index.js",
+  "scripts": {
+    "docker:start": "docker-compose down && docker-compose build --no-cache && docker-compose up -d",
+    "fork:mainnet": "bash ./scripts/fork-anvil.sh",
+    "verify:fork": "bash ./scripts/verify-fork.sh",
+    "verify:contract:available": "cast code 0x000000001D1D5004a02bAfAb9de2D6CE5b7B13de --rpc-url http://localhost:8545",
+    "make:transaction": "cd ./src && npm install && npm run start"
   }
 }
 ```
-
-Take appropriate action based on the reported reason:
-- Add more native tokens if balance is low
-- Check RPC connectivity if RPC is not operational
-- Review execution queue if jobs are stuck
-
-## Support
-
-For additional support or questions, please refer to the project documentation or contact the development team.
