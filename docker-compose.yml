@@ -8,14 +8,17 @@ services:
           - REDIS_HOST=redis
           - REDIS_PORT=6379
           - DOCS_URL=https://documenter.getpostman.com/view/33713944/2sAYBd99Ec
+          - MEE_ENABLED_SERVICES=bundler,execution
         ports:
           - "3000:3000"
         links:
           - redis
+        env_file:
+          - .env
         volumes:
           - ./logs:/usr/src/app/logs
           - ./keystore:/usr/src/app/keystore
-          - ./chains-testnet:/usr/src/app/chains
+          - ./chains:/usr/src/app/chains
     redis:
         image: redis:alpine
         restart: always
