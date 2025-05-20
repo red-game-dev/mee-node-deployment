@@ -1,0 +1,79 @@
+{
+  "chainId": "31337",
+  "name": "Local Eth Fork",
+  "rpc": {
+    "url": "http://host.docker.internal:8545"
+  },
+  "isTestChain": false,
+  "type": "evm",
+  "eip1559": true,
+  "handleOpsDeposit": "0.025",
+  "price": {
+    "chainId": "1",
+    "oracle": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+  },
+  "paymentTokens": [
+    {
+      "name": "ETH",
+      "address": "0x0000000000000000000000000000000000000000",
+      "symbol": "ETH",
+      "decimals": 18,
+      "price": {
+        "chainId": "1",
+        "oracle": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+      }
+    },
+    {
+      "name": "Wrapped Ether",
+      "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "symbol": "WETH",
+      "decimals": 18,
+      "price": {
+        "chainId": "1",
+        "oracle": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
+      }
+    },
+    {
+      "name": "ChainLink Token",
+      "address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+      "symbol": "LINK",
+      "decimals": 18,
+      "price": {
+        "chainId": "1",
+        "oracle": "0x2c1d072e956AFFC0D435Cb7AC38EF18d24d9127c"
+      }
+    },
+    {
+      "name": "USD Coin",
+      "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "symbol": "USDC",
+      "decimals": 6,
+      "price": {
+        "value": "1",
+        "decimals": "0"
+      },
+      "permitEnabled": true
+    },
+    {
+      "name": "Wrapped liquid staked Ether 2.0",
+      "address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "symbol": "wstETH",
+      "decimals": 18,
+      "price": {
+        "chainId": "1",
+        "oracle": "0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8"
+      },
+      "permitEnabled": true
+    },
+    {
+      "name": "Tether USD",
+      "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "symbol": "USDT",
+      "decimals": 6,
+      "price": {
+        "value": "1",
+        "decimals": "0"
+      }
+    }
+  ]
+}
