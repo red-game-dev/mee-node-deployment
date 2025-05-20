@@ -2,3 +2,4 @@ keystore
 redis-data
 logs
 .vscode
+*.log
